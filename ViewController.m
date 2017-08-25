@@ -11,6 +11,8 @@
 #import "MemberChatModel.h"
 #import "JKDBHelper.h"
 #import "NSData+EasyDB.h"
+#import "FMDBMigrationManager.h"
+#import "EDBMigration.h"
 
 @interface ViewController ()
 
@@ -21,6 +23,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [JKDBHelper shareInstance];
+    FMDBMigrationManager *manager = [FMDBMigrationManager managerWithDatabaseAtPath:[JKDBHelper dbPath ]migrationsBundle:[NSBundle mainBundle]];
+    EDBMigration *migration = [[EDBMigration alloc]initWithName:@"测试一下代码" version:20171533 andSqliteArray:@[@"create table fqmanager (name text, age text ,phonenumber text)"]];
+    [manager addMigration:migration];
+    if (!manager.hasMigrationsTable) {
+        [manager createMigrationsTable:nil];
+    }
+    [manager migrateDatabaseToVersion:UINT_MAX progress:nil error:nil];
+    
     BOOL groupChatTable = [GroupChatModel createTable];
     BOOL memberChatTable = [MemberChatModel createTable];
     [self addData];
